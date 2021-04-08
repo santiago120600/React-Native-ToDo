@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, FlatList, SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View, FlatList, SafeAreaView, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import Header from './components/Header';
 import Task from './components/Task';
 import AddTask from './components/AddTask';
@@ -14,26 +14,41 @@ export default function App() {
   ]);  
 
   const addTask = (text) =>{
-    setTasks(prevTasks=>{
-        return [{task:text, id:uuidv4()}, ...prevTasks]
-    });
+    if(text.trim()===""){
+        Alert.alert('Empty','Please add some text',[{text:'ok'}]);
+    }else{
+        setTasks(prevTasks=>{
+            return [{task:text, id:uuidv4()}, ...prevTasks]
+        });
+    }  
   };  
 
+  const deleteTask = (id) =>{
+      setTasks(prevTasks =>{
+          return prevTasks.filter(task =>task.id!==id);
+      })
+  }  
+
   return (
-    <SafeAreaView style={styles.container}>
-      <Header/>
-      <View style={styles.content}>
-        <AddTask addTask={addTask}/>
-        <View styles={styles.list}>
-            <FlatList
-                data={tasks}
-                renderItem={({item})=>(
-                    <Task item={item}/>
-                )}
-              /> 
-        </View>
-      </View>
-    </SafeAreaView>
+    <TouchableWithoutFeedback onPress={()=>Keyboard.dismiss()}>
+        <SafeAreaView style={styles.container}>
+          <Header/>
+          <View style={styles.content}>
+            <AddTask addTask={addTask}/>
+            <View styles={styles.list}>
+                <FlatList
+                    data={tasks}
+                    renderItem={({item})=>(
+                        <Task 
+                            item={item}
+                            deleteTask={deleteTask} 
+                        />
+                    )}
+                  /> 
+            </View>
+          </View>
+        </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -43,9 +58,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
     content: {
-        padding:30
+        padding:30,
+        flex:1
     },
     list:{
-        marginTop:30
+        marginTop:30,
+        flex:1
     }
 });
